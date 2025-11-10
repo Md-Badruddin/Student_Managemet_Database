@@ -1,0 +1,29 @@
+{
+  "name": "hospital-management-system",
+  "version": "1.0.0",
+  "description": "A hospital management system built with Next.js and React, focusing on user-friendly data entry and operations.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "eslint": "latest",
+    "eslint-config-next": "latest"
+  },
+  "keywords": [
+    "hospital",
+    "management",
+    "system",
+    "nextjs",
+    "react"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
