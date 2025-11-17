@@ -1,0 +1,89 @@
+
+body {
+  background: linear-gradient(135deg, #42e695 0%, #3bb2b8 100%);
+  font-family: 'Segoe UI', Arial, sans-serif;
+  margin: 0;
+}
+
+.container {
+  max-width: 400px;
+  margin: 60px auto;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 20px #04c4c4a3;
+  padding: 2.4rem 1.5rem;
+  text-align: center;
+}
+
+h1 {
+  color: #147882;
+  margin-bottom: 1rem;
+}
+
+.input-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 1.2em;
+}
+
+input[type="text"] {
+  flex: 1;
+  padding: 0.65rem;
+  border: 1.7px solid #4ed2d2;
+  border-radius: 7px;
+  font-size: 1em;
+  transition: box-shadow 0.2s;
+}
+
+input[type="text"]:focus {
+  box-shadow: 0 1px 8px #19bccc2a;
+  outline: none;
+}
+
+button {
+  background: #147882;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background: #2897aa;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 1.2em;
+}
+
+li {
+  background: #eafdfa;
+  margin-bottom: 13px;
+  padding: 0.75em 1.2em;
+  border-radius: 7px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 1px 6px #3bb2b830;
+}
+
+.completed {
+  text-decoration: line-through;
+  color: #62b9ae;
+  background: #e2e2e2;
+}
+
+.action-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btns button {
+  padding: 0.33rem 0.7rem;
+  font-size: 0.9em;
+}
