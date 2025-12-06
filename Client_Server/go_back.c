@@ -19,4 +19,5 @@ int w, s=0, ack, i;
                     else
                         s = ack;
                         }
-            return 0;
+return 0;
+                    }

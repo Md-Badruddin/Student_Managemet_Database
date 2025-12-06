@@ -1,0 +1,33 @@
+
+# Algorithm SnakeAI_GreedyBestFirst(snake_head_pos, food_pos, game_boundaries, snake_body_segments)
+possible_moves = []
+possible_moves.append(calculate_new_position(snake_head_pos, 'UP'))
+possible_moves.append(calculate_new_position(snake_head_pos, 'DOWN'))
+possible_moves.append(calculate_new_position(snake_head_pos, 'LEFT'))
+possible_moves.append(calculate_new_position(snake_head_pos, 'RIGHT'))
+valid_moves_with_heuristic = []
+for move_pos in possible_moves:
+is_valid = True    # Check boundary collision
+if move_pos.x < 0 or move_pos.x >= game_boundaries.width or \
+move_pos.y < 0 or move_pos.y >= game_boundaries.height:
+is_valid = False    # Check self-collision (excluding tail tip if it's moving)
+# For simplicity, we can check against all body segments except potentially the last one if the snake is moving.
+# A more robust check might involve predicting the tail's next position.    if is_valid:
+for segment_pos in snake_body_segments:
+if move_pos == segment_pos:
+is_valid = False
+break    if is_valid:
+heuristic_value = calculate_manhattan_distance(move_pos, food_pos)
+valid_moves_with_heuristic.append({'position': move_pos, 'heuristic': heuristic_value})  # If no valid moves (e.g., trapped), return a default or indicate failure
+if not valid_moves_with_heuristic:
+return 'STAY' # Or 'GAME_OVER' signal
+# Select the move with the highest heuristic score (closest to food)
+# Note: The prompt says 'lowest-distance move' but pseudocode implies choosing based on heuristic value.
+# GBFS chooses the *lowest heuristic value*, which means closest to the goal.  best_move = min(valid_moves_with_heuristic, key=lambda x: x['heuristic'])
+# Determine the direction string based on best_move.position relative to snake_head_pos
+# (e.g., if best_move.position is snake_head_pos + (0, -1), the move is 'UP')  return determine_direction_from_positions(snake_head_pos, best_move['position'])
+function calculate_manhattan_distance(pos1, pos2):
+return abs(pos1.x - pos2.x) + abs(pos1.y - pos2.y)function
+calculate_new_position(current_pos, direction):
+# Returns a new position object based on direction  passfunction determine_direction_from_positions(start_pos, end_pos):
+# Returns 'UP', 'DOWN', 'LEFT', or 'RIGHT'  pass
