@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DD Path Visualizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .panel {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .panel h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .secondary-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        #canvas {
+            width: 100%;
+            height: 500px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .dd-paths {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .dd-path-item {
+            background: white;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .dd-path-item:hover {
+            background: #667eea;
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .dd-path-item.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 8px;
+        }
+
+        .info-box h3 {
+            color: #1976d2;
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 968px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔀 DD Path Visualizer</h1>
+            <p>Visualize Decision-to-Decision paths in your code using Control Flow Graphs</p>
+        </div>
+
+        <div class="content">
+            <div class="panel">
+                <h2>📝 Enter Your Code</h2>
+                <textarea id="codeInput" placeholder="Enter your code here...
+Example:
+if (x > 0) {
+    y = x * 2;
+    if (y > 10) {
+        z = y + 5;
+    } else {
+        z = y - 5;
+    }
+} else {
+    y = x * -1;
+}
+return z;">if (x > 0) {
+    y = x * 2;
+    if (y > 10) {
+        z = y + 5;
+    } else {
+        z = y - 5;
+    }
+} else {
+    y = x * -1;
+}
+return z;</textarea>
+                <div class="button-group">
+                    <button onclick="generateCFG()">Generate CFG & DD Paths</button>
+                    <button class="secondary-btn" onclick="clearAll()">Clear</button>
+                </div>
+                
+                <div class="info-box">
+                    <h3>What are DD Paths?</h3>
+                    <p>DD (Decision-to-Decision) paths are sequences of statements that flow from one decision point to the next without any intermediate branching. Click on a DD path below to highlight it!</p>
+                </div>
+
+                <div id="ddPathsList" class="dd-paths"></div>
+            </div>
+
+            <div class="panel">
+                <h2>🎨 Control Flow Graph</h2>
+                <canvas id="canvas"></canvas>
+                
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: #4CAF50;"></div>
+                        <span>Start/End</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: #FF9800;"></div>
+                        <span>Decision Node</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: #2196F3;"></div>
+                        <span>Process Node</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: #E91E63;"></div>
+                        <span>DD Path Highlighted</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let nodes = [];
+        let edges = [];
+        let ddPaths = [];
+        let highlightedPath = null;
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            draw();
+        });
+
+        function parseCode(code) {
+            nodes = [];
+            edges = [];
+            let nodeId = 0;
+
+            nodes.push({ id: nodeId++, type: 'start', label: 'START', x: 0, y: 0 });
+
+            const lines = code.trim().split('\n');
+            let currentNode = 0;
+            let stack = [currentNode];
+
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+
+                if (line.startsWith('if')) {
+                    const condition = line.match(/if\s*\((.*?)\)/)?.[1] || 'condition';
+                    const decisionNode = nodeId++;
+                    nodes.push({ id: decisionNode, type: 'decision', label: condition, x: 0, y: 0 });
+                    edges.push({ from: currentNode, to: decisionNode });
+                    stack.push(decisionNode);
+                    currentNode = decisionNode;
+                } else if (line.startsWith('} else')) {
+                    const ifNode = stack.pop();
+                    const elseProcess = nodeId++;
+                    nodes.push({ id: elseProcess, type: 'process', label: 'else branch', x: 0, y: 0 });
+                    edges.push({ from: ifNode, to: elseProcess, label: 'false' });
+                    currentNode = elseProcess;
+                    stack.push(ifNode);
+                } else if (line.startsWith('}')) {
+                    if (stack.length > 0) {
+                        stack.pop();
+                    }
+                } else if (line.startsWith('return')) {
+                    const returnNode = nodeId++;
+                    nodes.push({ id: returnNode, type: 'process', label: line, x: 0, y: 0 });
+                    edges.push({ from: currentNode, to: returnNode });
+                    currentNode = returnNode;
+                } else {
+                    const processNode = nodeId++;
+                    nodes.push({ id: processNode, type: 'process', label: line.substring(0, 20), x: 0, y: 0 });
+                    edges.push({ from: currentNode, to: processNode });
+                    currentNode = processNode;
+                }
+            }
+
+            const endNode = nodeId++;
+            nodes.push({ id: endNode, type: 'end', label: 'END', x: 0, y: 0 });
+            edges.push({ from: currentNode, to: endNode });
+
+            layoutNodes();
+        }
+
+        function layoutNodes() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const levelHeight = height / (nodes.length + 1);
+
+            nodes.forEach((node, index) => {
+                node.y = (index + 1) * levelHeight;
+                node.x = width / 2;
+            });
+
+            const decisionNodes = nodes.filter(n => n.type === 'decision');
+            decisionNodes.forEach((dn, idx) => {
+                const children = edges.filter(e => e.from === dn.id).map(e => e.to);
+                if (children.length >= 2) {
+                    children.forEach((childId, i) => {
+                        const child = nodes.find(n => n.id === childId);
+                        if (child) {
+                            child.x = width / 2 + (i === 0 ? -150 : 150);
+                        }
+                    });
+                }
+            });
+        }
+
+        function findDDPaths() {
+            ddPaths = [];
+            const decisionNodes = nodes.filter(n => n.type === 'decision' || n.type === 'start');
+            
+            decisionNodes.forEach(startNode => {
+                const visited = new Set();
+                const queue = [[startNode.id]];
+
+                while (queue.length > 0) {
+                    const path = queue.shift();
+                    const currentId = path[path.length - 1];
+                    
+                    if (visited.has(currentId)) continue;
+                    visited.add(currentId);
+
+                    const currentNode = nodes.find(n => n.id === currentId);
+                    const outEdges = edges.filter(e => e.from === currentId);
+
+                    if (outEdges.length === 0) {
+                        if (path.length > 1) {
+                            ddPaths.push([...path]);
+                        }
+                        continue;
+                    }
+
+                    for (const edge of outEdges) {
+                        const nextNode = nodes.find(n => n.id === edge.to);
+                        if (nextNode && (nextNode.type === 'decision' || nextNode.type === 'end')) {
+                            ddPaths.push([...path, edge.to]);
+                        } else {
+                            queue.push([...path, edge.to]);
+                        }
+                    }
+                }
+            });
+
+            displayDDPaths();
+        }
+
+        function displayDDPaths() {
+            const listDiv = document.getElementById('ddPathsList');
+            listDiv.innerHTML = '<h3 style="color: #667eea; margin-top: 15px;">DD Paths Found:</h3>';
+            
+            ddPaths.forEach((path, index) => {
+                const pathDiv = document.createElement('div');
+                pathDiv.className = 'dd-path-item';
+                const pathNodes = path.map(id => nodes.find(n => n.id === id).label).join(' → ');
+                pathDiv.innerHTML = `<strong>Path ${index + 1}:</strong> ${pathNodes}`;
+                pathDiv.onclick = () => highlightPath(index);
+                listDiv.appendChild(pathDiv);
+            });
+        }
+
+        function highlightPath(index) {
+            highlightedPath = index;
+            document.querySelectorAll('.dd-path-item').forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+            draw();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            edges.forEach(edge => {
+                const from = nodes.find(n => n.id === edge.from);
+                const to = nodes.find(n => n.id === edge.to);
+                
+                let isHighlighted = false;
+                if (highlightedPath !== null) {
+                    const path = ddPaths[highlightedPath];
+                    const fromIndex = path.indexOf(edge.from);
+                    const toIndex = path.indexOf(edge.to);
+                    isHighlighted = fromIndex !== -1 && toIndex === fromIndex + 1;
+                }
+
+                ctx.beginPath();
+                ctx.moveTo(from.x, from.y);
+                ctx.lineTo(to.x, to.y);
+                ctx.strokeStyle = isHighlighted ? '#E91E63' : '#666';
+                ctx.lineWidth = isHighlighted ? 4 : 2;
+                ctx.stroke();
+
+                const angle = Math.atan2(to.y - from.y, to.x - from.x);
+                const arrowSize = 10;
+                ctx.beginPath();
+                ctx.moveTo(to.x, to.y);
+                ctx.lineTo(to.x - arrowSize * Math.cos(angle - Math.PI / 6), 
+                          to.y - arrowSize * Math.sin(angle - Math.PI / 6));
+                ctx.lineTo(to.x - arrowSize * Math.cos(angle + Math.PI / 6), 
+                          to.y - arrowSize * Math.sin(angle + Math.PI / 6));
+                ctx.closePath();
+                ctx.fillStyle = isHighlighted ? '#E91E63' : '#666';
+                ctx.fill();
+            });
+
+            nodes.forEach(node => {
+                let isHighlighted = false;
+                if (highlightedPath !== null) {
+                    isHighlighted = ddPaths[highlightedPath].includes(node.id);
+                }
+
+                const color = isHighlighted ? '#E91E63' : 
+                             node.type === 'start' || node.type === 'end' ? '#4CAF50' :
+                             node.type === 'decision' ? '#FF9800' : '#2196F3';
+
+                if (node.type === 'decision') {
+                    ctx.beginPath();
+                    ctx.moveTo(node.x, node.y - 30);
+                    ctx.lineTo(node.x + 40, node.y);
+                    ctx.lineTo(node.x, node.y + 30);
+                    ctx.lineTo(node.x - 40, node.y);
+                    ctx.closePath();
+                    ctx.fillStyle = color;
+                    ctx.fill();
+                    ctx.strokeStyle = isHighlighted ? '#fff' : '#333';
+                    ctx.lineWidth = isHighlighted ? 3 : 2;
+                    ctx.stroke();
+                } else {
+                    ctx.beginPath();
+                    ctx.roundRect(node.x - 50, node.y - 25, 100, 50, 8);
+                    ctx.fillStyle = color;
+                    ctx.fill();
+                    ctx.strokeStyle = isHighlighted ? '#fff' : '#333';
+                    ctx.lineWidth = isHighlighted ? 3 : 2;
+                    ctx.stroke();
+                }
+
+                ctx.fillStyle = isHighlighted ? '#fff' : '#fff';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(node.label, node.x, node.y);
+            });
+        }
+
+        function generateCFG() {
+            const code = document.getElementById('codeInput').value;
+            if (!code.trim()) {
+                alert('Please enter some code first!');
+                return;
+            }
+            parseCode(code);
+            findDDPaths();
+            highlightedPath = null;
+            draw();
+        }
+
+        function clearAll() {
+            document.getElementById('codeInput').value = '';
+            nodes = [];
+            edges = [];
+            ddPaths = [];
+            highlightedPath = null;
+            document.getElementById('ddPathsList').innerHTML = '';
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        generateCFG();
+    </script>
+</body>
+</html>
